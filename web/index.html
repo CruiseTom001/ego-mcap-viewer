@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCAP 视频查看器</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">◉</div>
+      <div style="min-width:0">
+        <h1>MCAP 视频查看器</h1>
+        <div class="sub" id="fileSub">未打开文件 —— 请选择或拖入 .mcap 文件</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <select id="fileSelect" title="本机检测到的 MCAP 文件"><option value="">扫描中…</option></select>
+      <button class="primary" id="btnOpen">打开文件…</button>
+      <button id="btnRescan" class="icon" title="重新扫描目录">⟳</button>
+      <button id="btnTheme" class="icon" title="切换主题">☾</button>
+      <button id="btnQuit" class="icon" title="退出程序">✕</button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="side-block">
+      <h3>相机通道</h3>
+      <div id="chanList"><div style="color:var(--text-faint);font-size:12px">尚未打开文件</div></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button id="btnAllCams" style="flex:1">全选</button>
+        <button id="btnNoCams" style="flex:1">全不选</button>
+      </div>
+    </div>
+
+    <div class="side-block">
+      <h3>布局</h3>
+      <div style="display:flex;gap:6px">
+        <button id="btn1" style="flex:1">1列</button>
+        <button id="btn2" style="flex:1">2列</button>
+        <button id="btn3" style="flex:1">3列</button>
+      </div>
+    </div>
+
+    <div class="side-block" id="infoBlock" style="display:none">
+      <h3>文件信息</h3>
+      <table class="kv" id="infoTable"></table>
+    </div>
+
+    <div class="side-block" id="camInfoBlock" style="display:none">
+      <h3>相机标定</h3>
+      <table class="kv" id="camInfoTable"></table>
+    </div>
+
+    <div class="side-block">
+      <h3>导出</h3>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button id="btnSnapGrid" disabled>导出当前画面（合成 PNG）</button>
+        <button id="btnDlImu" disabled>导出 IMU 数据（CSV）</button>
+        <button id="btnDlAudio" disabled>导出音频（WAV）</button>
+        <button id="btnClearCache">清空缓存目录</button>
+      </div>
+    </div>
+
+    <div class="side-block">
+      <h3>快捷键</h3>
+      <table class="kv">
+        <tr><td><kbd>空格</kbd></td><td>播放 / 暂停</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>逐帧后退 / 前进</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>←/→</kbd></td><td>±1 秒</td></tr>
+        <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>跳到开头 / 结尾</td></tr>
+        <tr><td><kbd>1</kbd>…<kbd>6</kbd></td><td>单路放大</td></tr>
+        <tr><td><kbd>0</kbd></td><td>退出放大</td></tr>
+        <tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>加速 / 减速</td></tr>
+        <tr><td><kbd>S</kbd></td><td>导出当前画面</td></tr>
+      </table>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div class="grid" id="grid">
+      <div class="empty-hint">
+        打开一个 <b>.mcap</b> 文件后，这里会显示文件内的多路视频<br>
+        支持拖拽文件到窗口导入，或点击右上角「打开文件…」<br>
+        <span style="font-size:12px">内置 H.264 无损封装，无需安装 ffmpeg</span>
+      </div>
+    </div>
+    <section class="panel" id="imuPanel" style="display:none">
+      <div class="panel-head">
+        <h3>IMU</h3>
+        <div class="legend" id="imuLegend"></div>
+        <div class="sp"></div>
+        <span id="imuReadout" style="font-family:Consolas,monospace;font-size:11.5px;color:var(--text-dim)"></span>
+        <button id="btnImuToggle" class="icon" title="折叠/展开">▾</button>
+      </div>
+      <canvas id="imuCanvas"></canvas>
+    </section>
+  </main>
+
+  <footer class="transport">
+    <div class="tl-row">
+      <div class="tl-time"><b id="tNow">00:00.000</b> / <span id="tTot">00:00.000</span></div>
+      <input type="range" id="seek" min="0" max="1000" value="0" step="1">
+      <div class="tl-right" id="frameInfo">—</div>
+    </div>
+    <div class="ctrl">
+      <button id="btnStart" class="icon" title="回到开头">⏮</button>
+      <button id="btnPrev" class="icon" title="上一帧">◀|</button>
+      <button id="btnPlay" class="primary" style="min-width:82px">▶ 播放</button>
+      <button id="btnNext" class="icon" title="下一帧">|▶</button>
+      <button id="btnEnd" class="icon" title="跳到结尾">⏭</button>
+      <div class="spd">
+        <span>速度</span>
+        <select id="speed">
+          <option value="0.1">0.1×</option>
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+        </select>
+      </div>
+      <label class="spd"><input type="checkbox" id="loop" checked> 循环</label>
+      <div class="sp"></div>
+      <label class="spd" title="音频来自文件内的麦克风通道">
+        <button id="btnMute" class="icon">🔇</button>
+        <input type="range" id="volume" min="0" max="100" value="70">
+      </label>
+      <span class="tag" id="cacheTag" title="缓存占用"></span>
+    </div>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h2 id="ovTitle">正在准备文件…</h2>
+    <p id="ovMsg">解析 MCAP 并封装视频</p>
+    <div class="bar"><i id="ovBar"></i></div>
+    <p id="ovPct" style="margin:12px 0 0;font-family:Consolas,monospace">0%</p>
+  </div>
+</div>
+
+<div class="dropzone" id="dropZone">松开鼠标即可导入 .mcap 文件</div>
+<div class="toast" id="toast"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

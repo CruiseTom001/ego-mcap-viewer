@@ -1,0 +1,33 @@
+# 构建产物 / 运行环境（体积巨大，不入库）
+release/
+build/
+runtime/
+cache/
+tmp/
+dist/
+*.spec
+
+# 缓存与样例视频（体积大 / 版权数据）
+*.mcap
+*.mp4
+*.zip
+*.7z
+*.exe
+*.bak
+*.bak.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 测试与审计临时输出
+tests/reports/
+*.log
+
+# 本地工作区（含记忆/审计数据）
+.workbuddy/
+.idea/
+.vscode/

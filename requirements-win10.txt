@@ -1,0 +1,26 @@
+# MCAP 视频查看器 —— Windows 10 1809+ x64 运行时依赖（锁定版本）
+#
+# 安装（启动脚本就是这么做的）：
+#   python -m pip install --only-binary=:all: -r requirements-win10.txt
+#
+# 约束说明：
+#  1. PySide6-Essentials 与 shiboken6 版本必须一致（6.11.2）。
+#  2. 所有 pin 都已实测在 Windows x86-64 上提供 wheel，覆盖 Python 3.10 ~ 3.13。
+#     注意 numpy 2.5.x 只有 cp312+ 的 wheel，为了让 3.10/3.11 也能装，这里锁到 2.2.6。
+#  3. 用 --only-binary=:all: 安装：禁止源码编译，避免目标机器没有编译器导致失败。
+#  4. bootstrap.ps1 会先安装 pip==26.2.1，再读取本清单，避免旧 ensurepip
+#     无法识别新 wheel 元数据；pip 属于构建工具，不是应用运行时依赖。
+
+# --- 界面（Qt 6）---
+PySide6-Essentials==6.11.2
+shiboken6==6.11.2
+
+# --- 解码与图像处理 ---
+opencv-python==5.0.0.93
+numpy==2.2.6
+Pillow==12.3.0
+
+# --- MCAP 容器层与其压缩后端 ---
+mcap==1.4.0
+zstandard==0.25.0
+lz4==4.4.5

@@ -1,0 +1,4 @@
+# 兼容入口：真正的锁定清单在 requirements-win10.txt
+#
+# 早期版本用的是这个文件名，为了不让旧脚本失效，这里直接转发过去。
+-r requirements-win10.txt

@@ -1,0 +1,24 @@
+# MCAP 视频查看器 —— macOS 11 及更老系统的运行时依赖
+#
+# 适用：macOS 10.15 (Catalina) ~ 11 (Big Sur)，配合 Python 3.11。
+#      macOS 12+ 请用 requirements-macos.txt，不要用本清单。
+#
+# 为什么单独一份：Qt 6.8+（PySide6 6.8+）要求 macOS 12+，
+# 老系统只能用 PySide6 6.4.x（Qt 6.4，支持 macOS 10.15+）。
+# 这个组合的界面代码与我们用到的 API（QMediaPlayer/QAudioOutput 等）兼容。
+#
+#   python3.11 -m pip install --only-binary=:all: -r requirements-macos-legacy.txt
+
+# --- 界面（Qt 6.4，支持 macOS 10.15+）---
+PySide6==6.4.3
+shiboken6==6.4.3
+
+# --- 解码与图像处理（保留 Python 3.11 有 wheel 的版本）---
+opencv-python==4.10.0.84
+numpy==1.26.4
+Pillow==10.4.0
+
+# --- MCAP 容器层与其压缩后端 ---
+mcap==1.4.0
+zstandard==0.25.0
+lz4==4.4.5

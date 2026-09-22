@@ -1,0 +1,26 @@
+# MCAP 视频查看器 —— macOS 运行时依赖（锁定版本，macOS 12+ / Python 3.12、3.13）
+#
+# 安装（bootstrap.sh 就是这么做的）：
+#   python3 -m pip install --only-binary=:all: -r requirements-macos.txt
+#
+# 与 Windows 清单的差异说明：
+#  1. 这里装的是**完整 PySide6**（而不是 PySide6-Essentials）——
+#     macOS 的音频后端用 QtMultimedia(QMediaPlayer)，它属于 Addons 包。
+#  2. 其余 pin 与 Windows 保持一致，便于两平台行为对得上。
+#  3. 全部用 --only-binary 安装：macOS 上不编译源码。
+#  4. 若某版本在目标机器上没有可用 wheel，install 会明确报错——
+#     把错误发回来调整 pin 即可（不要改成源码编译）。
+
+# --- 界面（Qt 6，完整包含 QtMultimedia）---
+PySide6==6.11.2
+shiboken6==6.11.2
+
+# --- 解码与图像处理 ---
+opencv-python==5.0.0.93
+numpy==2.2.6
+Pillow==12.3.0
+
+# --- MCAP 容器层与其压缩后端 ---
+mcap==1.4.0
+zstandard==0.25.0
+lz4==4.4.5
