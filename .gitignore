@@ -31,3 +31,7 @@ tests/reports/
 .workbuddy/
 .idea/
 .vscode/
+
+# 报告产物 / 运行时锁
+ego_report/
+.bootstrap.lock
